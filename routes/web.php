@@ -4,22 +4,28 @@ Route::get('/login', function (){
     return 'login';
 })->name('login');
 
-Route::middleware(['auth'])->group(function (){
+Route::middleware([])->group(function (){
 
     Route::prefix('admin')->group(function () {
 
         Route::get('/dashboard', function (){
             return 'Home Admin';
-        });
+        })->name('admin.dashboarad');
     
         Route::get('/financeiro', function (){
             return 'Financeiro Admin';
-        });
+        })->name('admin.financeiro');
     
         Route::get('/produtos', function (){
             return 'Produtos Admin';
-        });
-    }); 
+        })->name('admin.produtos');
+    
+        Route::namespace('Admin')->group(function () {
+
+            Route::get('/', 'TesteController@teste')->name('admin.home');
+
+        }); 
+    });
 });
 
 Route::get('/redirect3', function (){
@@ -35,7 +41,7 @@ Route::get('/redirect1', function (){
 });
 
 Route::get('/redirect2', function(){
-    return 'redirect2';
+    return redirect()->route('admin.home');
 });
 
 Route::get('/produtos/{idProduct?}', function ($idProduct = 'dfsddf'){
@@ -74,4 +80,24 @@ Route::get('/contato', function(){
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+
+Route::group([
+    'middleware' => [''],
+    'prefix' => 'teste',
+    'namespace' => 'Admin',
+    'name' => 'teste.'
+], function(){
+    Route::get('/dashboard', function (){
+        return 'Home Admin teste';
+    })->name('dashboarad');
+
+    Route::get('/financeiro', function (){
+        return 'Financeiro Admin teste';
+    })->name('financeiro');
+
+    Route::get('/produtos', function (){
+        return 'Produtos Admin teste';
+    })->name('produtos');
 });
