@@ -4,94 +4,42 @@
 
 @section('content')
   <h1>Exibindo os produtos</h1>
-  <a href="{{ route('products.create')}}">Cadastrar</a>
-  @component('admin.components.card')
+  <a href="{{ route('products.create')}}" class="btn btn-primary">Cadastrar</a>
 
-    @slot('title')
-        <h3>Título card</h3>
-    @endslot
+  <form action="{{route('products.search')}}" method="post" class="form form-inline">
+  @csrf
+  <input type="text" name="filter" id="filter" placeholder="Filtrar:" class="form-control">
+  <button type="submit" class="btn btn-info">Pesquisar</button>
+</form>
 
-      Um card de exemplo
-  @endcomponent
-
-  @include('admin.includes.alerts', ['content' => 'Alerta de preço de produtos'])
-  
-  <hr>
 
   @isset($products)
-    @foreach ($products as $product)
-          <p @if ($loop->last) class="last" @endif>{{$product}}</p>
-    @endforeach
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach ($products as $product)
+        <tr>
+          <td>
+            {{$product->name}}
+          </td>
+          <td>
+            {{$product->price}}
+          </td>
+          <td>
+            <a href={{ route('products.edit', $product->id)}}>Editar</a>
+            <a href="{{ route('products.show', $product->id)}}">Detalhes</a>
+          </td>
+        </tr>
+      @endforeach
+    </tbody>  
+  </table>
+  {{$products->links()}}
   @endisset
-
-  <hr>
-
-  @forelse ($products as $product)
-      <p>{{$product}}</p>
-  @empty
-      <p>Não existem produtos cadastrados</p>
-  @endforelse
-
-  @if ($teste === 123)
-    É igual
-  @elseif($teste == 123)
-    É igual a 123
-  @else
-    É diferente
-  @endif
-
-
-  @unless ($teste === '123')
-    sdasdsas
-  @else
-    asdadasd
-  @endunless
-
-  
-  @isset(($teste2))
-      {{$teste2}}      
-  @endisset
-
-
-  @empty($teste3)
-    <p>Vazio</p>
-  @endempty
-
-
-  @auth
-    <p>Autenticado</p>
-  @else
-    <p>Não autenticado</p>    
-  @endauth
-
-
-  @guest
-    <p>Não atendicado</p>   
-  @endguest
-
-  @switch($teste)
-      @case(1)
-          Igual 1
-          @break
-      @case(123)
-          Igual 123
-          @break
-      @default
-          Default
-  @endswitch
 
 @endsection
-
-@push('styles')
-  <style>
-    .last{
-      background: #ccc;
-    }
-  </style>  
-@endpush
-
-@push('scripts')
-  <script>
-      document.body.style.backgroundColor = '#efefef'
-  </script>    
-@endpush

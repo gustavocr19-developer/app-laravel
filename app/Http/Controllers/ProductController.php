@@ -4,15 +4,18 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreUpdateProductRequest;
+use App\Models\Product;
 
 class ProductController extends Controller
 {   
     protected $request;
+    protected $repository;
 
-    public function __construct(Request $request)
+    public function __construct(Request $request, Product $product)
     {
         //dd($request);
         $this->request = $request;
+        $this->repository = $product;
         //$this->middleware('auth');
     }
 
@@ -22,13 +25,10 @@ class ProductController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
-        $teste = 123;
-        $teste2 = 321;
-        $teste3 = [1,2,3];
-        $products = ['TV','Geladeira','Forno','Sofá'];
+    {   
+        $products = $this->repository->paginate();
 
-        return  view('admin.pages.products.index', compact('teste','teste2','teste3','products'));
+        return  view('admin.pages.products.index', compact('products'));
     }
 
     /**
@@ -44,22 +44,16 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  App\Http\Requests\StoreUpdateProductRequest  $request
      * @return \Illuminate\Http\Response
      */
     public function store(StoreUpdateProductRequest $request)
     {   
+        $data = $request->only('name', 'description', 'price');
 
-        dd('OK');
-        //dd('Cadastrando...');
-        //dd($request->all());
-        //dd($request->only(['name', 'description']));
-        //dd($request->only('name'));
-        //dd($request->input('name'));
-        if($request->file('photo')->isValid()){
-            //dd($request->photo->getClientOriginalName());
-            $request->file('photo')->store('products');
-        }
+        $this->repository->create($data);
+
+        return redirect()->route('products.index');
     }
 
     /**
@@ -70,7 +64,15 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        //
+        $product = $this->repository->where('id', $id)->first();
+        //$product = Product::find($id);
+
+        if(!$product)
+            return redirect()->back();
+
+        return view('admin.pages.products.show', [
+            'product' => $product
+        ]);
     }
 
     /**
@@ -80,20 +82,29 @@ class ProductController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
-    {
-        return view('admin.pages.products.edit', compact('id'));
+    {   
+        $product = $this->repository->where('id',$id)->first();
+
+        return view('admin.pages.products.edit', [
+            'product'=> $product
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  App\Http\Requests\StoreUpdateProductRequest $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
-        dd("Editando o produto {$id}");
+        if (!$product = $this->repository->find($id))
+            return redirect()->back();
+
+        $product->update($request->all());
+
+        return redirect()->route('products.index');
     }
 
     /**
@@ -104,6 +115,21 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $product = $this->repository->where('id', $id)->first();
+        if(!$product)
+            return redirect()->back();
+
+        $product->delete();
+
+        return redirect()->route('products.index');
+    }
+
+    public function search(Request $request)
+    {
+        $products = $this->repository->search($request->filter);
+
+        return view('admin.pages.products.index', [
+            'products' => $products,
+        ]);
     }
 }
